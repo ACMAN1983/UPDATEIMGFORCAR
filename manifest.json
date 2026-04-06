@@ -1,17 +1,13 @@
 {
-  "name": "SENTINEL v8.5.2 PRO",
+  "name": "SENTINEL PRO",
   "short_name": "SENTINEL",
   "description": "Quantum Uplink Surveillance Terminal",
   "start_url": "index.html",
   "display": "standalone",
   "background_color": "#020617",
-  "theme_color": "#00f3ff",
+  "theme_color": "#020617",
+  "orientation": "portrait",
   "icons": [
-    {
-      "src": "https://www.gstatic.com/images/branding/product/2x/drive_2020q4_48dp.png",
-      "sizes": "96x96",
-      "type": "image/png"
-    },
     {
       "src": "https://www.gstatic.com/images/branding/product/2x/drive_2020q4_192dp.png",
       "sizes": "192x192",
