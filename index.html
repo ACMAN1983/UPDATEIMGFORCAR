@@ -1,132 +1,111 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>SENTINEL v7.1 ULTRA</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap');
-    :root { --neon: #00f3ff; }
-    body { background: #020617; color: white; font-family: 'Orbitron', sans-serif; margin: 0; overflow: hidden; display: flex; justify-content: center; min-height: 100dvh; }
-    .terminal-container { width: 100%; max-width: 420px; background: radial-gradient(circle at center, #0f172a 0%, #020617 100%); padding: 1.5rem; display: flex; flex-direction: column; }
-    #cam-box { width: 100%; height: 220px; border-radius: 1rem; overflow: hidden; border: 2px solid var(--neon); box-shadow: 0 0 15px rgba(0,243,255,0.2); margin-bottom: 1rem; position: relative; }
-    video { width: 100%; height: 100%; object-fit: cover; }
-    .speed-gauge { width: 180px; height: 180px; margin: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 4px double var(--neon); border-radius: 50%; transition: 0.3s; }
-    .speed-value { font-size: 70px; font-weight: 900; color: var(--neon); text-shadow: 0 0 10px var(--neon); }
-    .neon-select { background: #111827; border: 1px solid #374151; color: var(--neon); width: 100%; padding: 12px; border-radius: 8px; font-size: 14px; outline: none; }
-    #status-log { font-family: monospace; font-size: 10px; color: #2dd4bf; height: 40px; overflow: hidden; border-left: 2px solid var(--neon); padding-left: 10px; margin-top: 1rem; }
-    .sync-flash { animation: flash 0.5s ease; }
-    @keyframes flash { 50% { background: rgba(0, 243, 255, 0.3); box-shadow: 0 0 40px var(--neon); } }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第一類文明 - 截圖傳送控制台</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body { background: #0d1117; color: #c9d1d9; font-family: -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .terminal { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 30px; width: 90%; max-width: 450px; box-shadow: 0 15px 40px rgba(0,0,0,0.6); text-align: center; }
+        #capture-box { border: 1px solid #444; border-radius: 8px; padding: 25px; background: #0d1117; margin-bottom: 25px; transition: 0.3s; }
+        h4 { color: #58a6ff; margin: 0 0 10px 0; letter-spacing: 1px; }
+        .badge { background: #238636; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; margin-bottom: 15px; display: inline-block; }
+        .info { font-size: 13px; color: #8b949e; line-height: 1.6; }
+        button { background: #238636; color: white; border: 1px solid rgba(240,246,252,0.1); border-radius: 6px; padding: 14px; width: 100%; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        button:hover { background: #2ea043; transform: translateY(-2px); }
+        button:active { transform: translateY(0); }
+        button:disabled { background: #216e39; opacity: 0.6; cursor: not-allowed; }
+        #status-log { margin-top: 20px; font-size: 14px; min-height: 20px; }
+        .success { color: #3fb950; }
+        .error { color: #f85149; }
+    </style>
 </head>
 <body>
-  <div class="terminal-container" id="main-ui">
-    <div id="cam-box">
-        <video id="v" playsinline autoplay muted></video>
-        <div class="absolute top-2 left-2 px-2 py-0.5 bg-black/50 border border-cyan-500 rounded text-[9px] text-cyan-400">SAT-LINK ACTIVE</div>
+
+<div class="terminal">
+    <div id="capture-box">
+        <div class="badge">● SYSTEM READY</div>
+        <h4>ACMAN1983 傳送終端</h4>
+        <div class="info">
+            目標系統：運營模組-車輛追蹤<br>
+            傳送節點：Google Drive API<br>
+            <span style="font-size: 10px; color: #444;">1Hkh4Sa8x2YtTKivHiKnFVZUHad2syVVO</span>
+        </div>
     </div>
 
-    <div class="flex-1 flex flex-col justify-center text-center">
-      <div class="speed-gauge" id="gauge">
-        <div id="current-speed" class="speed-value">0</div>
-        <div class="text-[10px] text-slate-500 font-bold tracking-widest uppercase">KM/H</div>
-      </div>
-      <div class="grid grid-cols-2 gap-4 mt-8 text-[11px] text-cyan-600 font-bold uppercase">
-        <div>Lat: <span id="disp-lat" class="text-white font-mono">0.0000</span></div>
-        <div>Lng: <span id="disp-lng" class="text-white font-mono">0.0000</span></div>
-      </div>
-    </div>
+    <button id="mainBtn" onclick="initiateCapture()">🚀 執行全自動截圖傳送</button>
+    <div id="status-log">等待指令...</div>
+</div>
 
-    <div class="space-y-3 bg-gray-900/40 p-4 rounded-xl border border-gray-800">
-      <div class="flex gap-2">
-        <select id="carId" class="neon-select flex-1"><option>SYNCING...</option></select>
-        <select id="videoSource" class="neon-select flex-1"></select>
-      </div>
-      <button onclick="engage()" id="mainBtn" class="w-full py-4 bg-cyan-400 text-black font-black rounded-lg uppercase tracking-widest active:scale-95 transition-all">Engage Link</button>
-      <div id="status-log">>>> WAITING FOR COMMAND</div>
-    </div>
-    <canvas id="snap" class="hidden"></canvas>
-  </div>
+<script>
+    /**
+     * 配置區：請確保此網址為「管理部署」中產生的最新執行網址
+     */
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxkbZBPWlFP5fozNNNBmfTGU2YQkjr0uh6TKAOSRFCzPchDGYnRl63Jw8y3_pA9BLTh8hg/exec";
 
-  <script>
-    // --- 重要：填入你的 GAS 部署網址 ---
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbxkZbPWIFP5fozNNNBmfTGU2YQkJr0uh6TkAOSRFCzPchDGYnRl63Jw8y3_pA9BLTh8hg/exec";
+    async function initiateCapture() {
+        const btn = document.getElementById('mainBtn');
+        const log = document.getElementById('status-log');
+        const target = document.getElementById('capture-box');
 
-    window.onload = async () => {
-      try {
-        // 初始權限請求
-        await navigator.mediaDevices.getUserMedia({ video: true });
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        const vSel = document.getElementById('videoSource');
-        devices.filter(d => d.kind === 'videoinput').forEach((d, i) => vSel.add(new Option(d.label || `CAM ${i+1}`, d.deviceId)));
-        
-        // 從 GAS 抓取車輛清單
-        const res = await fetch(GAS_URL);
-        const names = await res.json();
-        const carSel = document.getElementById('carId');
-        carSel.innerHTML = '';
-        if(names && names.length > 0 && names[0] !== "HUB_ERR") {
-            names.forEach(n => carSel.add(new Option(n, n)));
-        } else {
-            carSel.add(new Option("DEFAULT_CAR", "DEFAULT_CAR"));
+        btn.disabled = true;
+        log.className = '';
+        log.innerText = "⏳ 正在轉換原子數據 (截圖中)...";
+
+        try {
+            // 1. 執行截圖渲染
+            const canvas = await html2canvas(target, { 
+                backgroundColor: "#0d1117",
+                scale: 2 // 高解析度優化
+            });
+            const base64Data = canvas.toDataURL("image/png");
+
+            log.innerText = "🚀 穿梭傳送中 (Sending to Drive)...";
+
+            // 2. 跨時空通訊 (支援 GAS 原生與 GitHub 遠端)
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+                // GAS 環境內部通道
+                google.script.run
+                    .withSuccessHandler(res => handleSuccess(res))
+                    .withFailureHandler(err => handleError(err))
+                    .saveScreenshot(base64Data, generateFileName());
+            } else {
+                // GitHub 遠端 Fetch 通道 (使用 no-cors 突破限制)
+                await fetch(GAS_URL, {
+                    method: "POST",
+                    mode: "no-cors", 
+                    headers: { "Content-Type": "text/plain" },
+                    body: JSON.stringify({
+                        base64Data: base64Data,
+                        fileName: generateFileName()
+                    })
+                });
+                handleSuccess({ status: 'success' });
+            }
+        } catch (e) {
+            handleError(e);
+        } finally {
+            btn.disabled = false;
         }
-        document.getElementById('status-log').innerText = ">>> UPLINK ESTABLISHED";
-      } catch (e) { document.getElementById('status-log').innerText = ">>> HUB ERR: " + e.message; }
-    };
-
-    async function engage() {
-      const devId = document.getElementById('videoSource').value;
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: devId } } });
-      document.getElementById('v').srcObject = stream;
-      
-      const btn = document.getElementById('mainBtn');
-      btn.disabled = true;
-      btn.innerText = "LINKING...";
-      btn.style.background = "#1e293b";
-      btn.style.color = "#475569";
-      
-      startSync();
     }
 
-    function startSync() {
-      const carId = document.getElementById('carId').value;
-      const log = document.getElementById('status-log');
-      const gauge = document.getElementById('gauge');
-
-      navigator.geolocation.watchPosition(async pos => {
-        const speed = pos.coords.speed ? Math.round(pos.coords.speed * 3.6) : 0;
-        document.getElementById('current-speed').innerText = speed;
-        document.getElementById('disp-lat').innerText = pos.coords.latitude.toFixed(4);
-        document.getElementById('disp-lng').innerText = pos.coords.longitude.toFixed(4);
-
-        // 影像抓取：320x240，中等品質以優化傳輸速度
-        const video = document.getElementById('v');
-        const canvas = document.getElementById('snap');
-        canvas.width = 320; canvas.height = 240;
-        canvas.getContext('2d').drawImage(video, 0, 0, 320, 240);
-        const base64 = canvas.toDataURL("image/jpeg", 0.4);
-
-        // 執行跨域 POST 上傳
-        fetch(GAS_URL, {
-          method: "POST",
-          mode: "no-cors", // 核心突破技術
-          body: JSON.stringify({
-            data: { carId, lat: pos.coords.latitude, lng: pos.coords.longitude, speed, accuracy: pos.coords.accuracy },
-            imageString: base64
-          })
-        })
-        .then(() => {
-          log.innerText = ">>> DATA SYNCED | " + new Date().toLocaleTimeString();
-          gauge.classList.add('sync-flash');
-          setTimeout(() => gauge.classList.remove('sync-flash'), 500);
-        })
-        .catch(e => { log.innerText = ">>> SYNC FAILED"; });
-
-      }, (err) => {
-          log.innerText = ">>> GPS ERR: " + err.message;
-      }, { enableHighAccuracy: true });
+    function generateFileName() {
+        return "Universe_Capture_" + new Date().getTime() + ".png";
     }
-  </script>
+
+    function handleSuccess(res) {
+        const log = document.getElementById('status-log');
+        log.className = 'success';
+        log.innerHTML = "✅ 傳送指令已送達！<br><small>請於 3-5 秒後檢查 Google Drive</small>";
+    }
+
+    function handleError(err) {
+        const log = document.getElementById('status-log');
+        log.className = 'error';
+        log.innerText = "❌ 傳送失敗: " + err;
+    }
+</script>
+
 </body>
 </html>
