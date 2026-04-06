@@ -1,19 +1,7 @@
-const CACHE_NAME = 'sentinel-v852-cache';
-const ASSETS = [
-  './',
-  './index.html',
-  'https://cdn.tailwindcss.com',
-  'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'
-];
-
+const CACHE_NAME = 'sentinel-v855-cache';
 self.addEventListener('install', (e) => {
-  e.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
-  );
+  e.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(['./', './index.html'])));
 });
-
 self.addEventListener('fetch', (e) => {
-  e.respondWith(
-    caches.match(e.request).then((res) => res || fetch(e.request))
-  );
+  e.respondWith(caches.match(e.request).then((res) => res || fetch(e.request)));
 });
