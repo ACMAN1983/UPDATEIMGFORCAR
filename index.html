@@ -3,39 +3,40 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>SENTINEL v8.5.5 PRO</title>
+  <title>SENTINEL v8.6 FULLSCREEN</title>
   
   <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="apple-touch-icon" href="https://www.gstatic.com/images/branding/product/2x/drive_2020q4_192dp.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap');
     :root { --neon: #00f3ff; --dark: #020617; }
     
-    /* 修正 iOS 全螢幕高度並隱藏捲動條 */
-    html, body { height: 100%; margin: 0; padding: 0; background: var(--dark); overflow: hidden; touch-action: none; }
+    /* 亞原子級 CSS 修正：確保內容填滿整個視窗，包含安全區域 */
+    html, body { height: 100vh; height: -webkit-fill-available; margin: 0; padding: 0; background: var(--dark); overflow: hidden; touch-action: none; }
     
     body { 
       font-family: 'Orbitron', sans-serif;
       display: flex; justify-content: center;
-      padding-top: env(safe-area-inset-top);
+      /* env 函數避讓瀏海與底部導航 bar */
+      padding-top: env(safe-area-inset-top); 
       padding-bottom: env(safe-area-inset-bottom);
     }
 
     .terminal-container { 
       width: 100%; max-width: 420px; 
       background: radial-gradient(circle at center, #0f172a 0%, #020617 100%); 
-      padding: 1.5rem; display: flex; flex-direction: column; position: relative;
+      padding: 1.25rem; display: flex; flex-direction: column; position: relative;
     }
 
     #cam-box { 
-      width: 100%; aspect-ratio: 9 / 14; 
+      width: 100%; aspect-ratio: 9 / 15; /* 調整比例以適應全螢幕 */
       border-radius: 1.5rem; overflow: hidden; 
       border: 2px solid var(--neon); 
-      box-shadow: 0 0 30px rgba(0,243,255,0.25); 
+      box-shadow: 0 0 40px rgba(0,243,255,0.3); 
       position: relative; background: #000; 
     }
     video { width: 100%; height: 100%; object-fit: cover; }
@@ -45,19 +46,17 @@
 
     .neon-btn { 
       background: var(--neon); color: #020617; font-weight: 900; 
-      transition: 0.3s; text-transform: uppercase; letter-spacing: 4px;
-      box-shadow: 0 0 15px var(--neon);
+      transition: 0.3s; text-transform: uppercase; letter-spacing: 5px;
+      box-shadow: 0 0 20px var(--neon);
     }
-    .neon-btn:active { transform: scale(0.95); filter: brightness(1.2); }
+    .neon-btn:active { transform: scale(0.96); filter: brightness(1.2); }
 
     #status-log { font-family: monospace; font-size: 10px; color: #2dd4bf; border-left: 2px solid var(--neon); padding-left: 10px; margin-top: 1rem; }
-    .flash { animation: f 0.2s ease-out; }
-    @keyframes f { 0% { opacity: 1; } 50% { opacity: 0.5; background: #fff; } 100% { opacity: 1; } }
   </style>
 </head>
-<body>
+<body class="touch-none overscroll-none">
   <div class="terminal-container">
-    <div class="text-[8px] text-cyan-500/50 absolute top-4 right-6 tracking-widest">BUILD_ID: 8.5.5_ULTRA</div>
+    <div class="text-[8px] text-cyan-500/50 absolute top-4 right-6 tracking-widest">QUANTUM_MODE: v8.6</div>
     <h2 class="text-center text-cyan-400 mb-4 tracking-[0.5em] text-xl font-black italic">SENTINEL</h2>
     
     <div id="cam-box">
@@ -65,9 +64,9 @@
       <div class="scanline"></div>
     </div>
 
-    <div class="flex-1 flex flex-col justify-end space-y-4 mb-4">
+    <div class="flex-1 flex flex-col justify-end space-y-4 mb-3">
       <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-700 backdrop-blur-md">
-        <p id="res-display" class="text-[10px] text-cyan-300 font-mono center">INITIALIZING QUANTUM LINK...</p>
+        <p id="res-display" class="text-[10px] text-cyan-300 font-mono text-center">INITIALIZING QUANTUM LINK...</p>
       </div>
       <button onclick="captureAndSend()" id="mainBtn" class="neon-btn w-full py-6 rounded-2xl">EXECUTE UPLINK</button>
       <div id="status-log">>>> STANDBY</div>
@@ -76,7 +75,7 @@
   </div>
 
   <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbxkZbPWIFP5fozNNNBmfTGU2YQkJr0uh6TkAOSRFCzPchDGYnRl63Jw8y3_pA9BLTh8hg/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxkbZBPWlFP5fozNNNBmfTGU2YQkjr0uh6TKAOSRFCzPchDGYnRl63Jw8y3_pA9BLTh8hg/exec";
     const video = document.getElementById('v');
     const log = document.getElementById('status-log');
 
@@ -92,30 +91,22 @@
         });
         video.srcObject = stream;
         video.onloadedmetadata = () => {
-          document.getElementById('res-display').innerText = `RAW: ${video.videoWidth}x${video.videoHeight} (LOCKED)`;
-          log.innerText = ">>> SAT-LINK STABLE";
+          document.getElementById('res-display').innerText = `RAW: ${video.videoWidth}x${video.videoHeight} ( LOCKED )`;
+          log.innerText = ">>> PWA SYSTEM ONLINE";
         };
       } catch (e) { log.innerText = ">>> ERR: " + e.message; }
     };
 
     async function captureAndSend() {
-      const btn = document.getElementById('mainBtn');
+      // 擷取邏輯不變
       const canvas = document.getElementById('snap');
-      btn.disabled = true;
-      document.getElementById('cam-box').classList.add('flash');
-      setTimeout(() => document.getElementById('cam-box').classList.remove('flash'), 200);
-
-      try {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        canvas.getContext('2d').drawImage(video, 0, 0);
-        const base64 = canvas.toDataURL("image/jpeg", 0.75);
-
-        log.innerText = ">>> TRANSMITTING...";
-        await fetch(GAS_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ imageString: base64, fileName: `SEN_${Date.now()}.jpg` }) });
-        log.innerText = ">>> UPLINK_SUCCESS | " + new Date().toLocaleTimeString();
-      } catch (e) { log.innerText = ">>> UPLINK_ERR"; }
-      finally { setTimeout(() => btn.disabled = false, 1000); }
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext('2d').drawImage(video, 0, 0);
+      const base64 = canvas.toDataURL("image/jpeg", 0.75);
+      log.innerText = ">>> TRANSMITTING...";
+      await fetch(GAS_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ imageString: base64, fileName: `SEN_V86_${Date.now()}.jpg` }) });
+      log.innerText = ">>> UPLINK_SUCCESS | " + new Date().toLocaleTimeString();
     }
   </script>
 </body>
