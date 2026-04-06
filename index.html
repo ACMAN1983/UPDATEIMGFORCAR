@@ -3,73 +3,45 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>SENTINEL v8.6-1 FULLSCREEN</title>
-  
+  <title>SENTINEL v8.8 AUTO</title>
   <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="apple-touch-icon" href="apple-touch-icon.png">
-
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap');
-    :root { --neon: #00f3ff; --dark: #020617; }
-    
-    /* 亞原子級 CSS 修正：確保內容填滿整個視窗，包含安全區域 */
+    :root { --neon: #00f3ff; --alert: #ff0055; --dark: #020617; }
     html, body { height: 100vh; height: -webkit-fill-available; margin: 0; padding: 0; background: var(--dark); overflow: hidden; touch-action: none; }
-    
-    body { 
-      font-family: 'Orbitron', sans-serif;
-      display: flex; justify-content: center;
-      /* env 函數避讓瀏海與底部導航 bar */
-      padding-top: env(safe-area-inset-top); 
-      padding-bottom: env(safe-area-inset-bottom);
-    }
-
-    .terminal-container { 
-      width: 100%; max-width: 420px; 
-      background: radial-gradient(circle at center, #0f172a 0%, #020617 100%); 
-      padding: 1.25rem; display: flex; flex-direction: column; position: relative;
-    }
-
-    #cam-box { 
-      width: 100%; aspect-ratio: 9 / 15; /* 調整比例以適應全螢幕 */
-      border-radius: 1.5rem; overflow: hidden; 
-      border: 2px solid var(--neon); 
-      box-shadow: 0 0 40px rgba(0,243,255,0.3); 
-      position: relative; background: #000; 
-    }
+    body { font-family: 'Orbitron', sans-serif; display: flex; justify-content: center; padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) 0; }
+    .terminal-container { width: 100%; max-width: 420px; background: radial-gradient(circle at center, #0f172a 0%, #020617 100%); padding: 1.25rem; display: flex; flex-direction: column; position: relative; }
+    #cam-box { width: 100%; aspect-ratio: 9 / 16; border-radius: 1.5rem; overflow: hidden; border: 2px solid var(--neon); box-shadow: 0 0 30px rgba(0,243,255,0.2); position: relative; background: #000; }
     video { width: 100%; height: 100%; object-fit: cover; }
-    
-    .scanline { width: 100%; height: 2px; background: var(--neon); opacity: 0.4; position: absolute; top: 0; animation: scan 4s linear infinite; }
+    .scanline { width: 100%; height: 2px; background: var(--neon); opacity: 0.3; position: absolute; top: 0; animation: scan 4s linear infinite; }
     @keyframes scan { from { top: 0%; } to { top: 100%; } }
-
-    .neon-btn { 
-      background: var(--neon); color: #020617; font-weight: 900; 
-      transition: 0.3s; text-transform: uppercase; letter-spacing: 5px;
-      box-shadow: 0 0 20px var(--neon);
-    }
-    .neon-btn:active { transform: scale(0.96); filter: brightness(1.2); }
-
+    .neon-btn { background: var(--neon); color: #020617; font-weight: 900; transition: 0.3s; text-transform: uppercase; letter-spacing: 3px; box-shadow: 0 0 15px var(--neon); }
+    .neon-btn.active { background: var(--alert); box-shadow: 0 0 20px var(--alert); color: white; }
     #status-log { font-family: monospace; font-size: 10px; color: #2dd4bf; border-left: 2px solid var(--neon); padding-left: 10px; margin-top: 1rem; }
+    .auto-indicator { display: none; align-items: center; gap: 8px; font-size: 10px; color: var(--alert); font-weight: bold; margin-bottom: 10px; }
+    .pulse-dot { width: 8px; height: 8px; background: var(--alert); border-radius: 50%; animation: pulse 1s infinite; }
+    @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.3; transform: scale(1.5); } 100% { opacity: 1; transform: scale(1); } }
+    .flash { animation: f 0.2s ease-out; }
+    @keyframes f { 0% { opacity: 1; } 50% { opacity: 0.5; background: #fff; } 100% { opacity: 1; } }
   </style>
 </head>
-<body class="touch-none overscroll-none">
+<body class="overscroll-none">
   <div class="terminal-container">
-    <div class="text-[8px] text-cyan-500/50 absolute top-4 right-6 tracking-widest">QUANTUM_MODE: v8.6</div>
-    <h2 class="text-center text-cyan-400 mb-4 tracking-[0.5em] text-xl font-black italic">SENTINEL</h2>
+    <div class="text-[8px] text-cyan-500/50 absolute top-4 right-6 tracking-widest">SENTINEL_AUTO_v8.8</div>
+    <h2 class="text-center text-cyan-400 mb-2 tracking-[0.5em] text-lg font-black italic">SENTINEL</h2>
     
-    <div id="cam-box">
-      <video id="v" playsinline autoplay muted></video>
-      <div class="scanline"></div>
-    </div>
+    <div id="cam-box"><video id="v" playsinline autoplay muted></video><div class="scanline"></div></div>
 
-    <div class="flex-1 flex flex-col justify-end space-y-4 mb-3">
+    <div class="flex-1 flex flex-col justify-end space-y-4 mb-2">
+      <div id="auto-status" class="auto-indicator"><div class="pulse-dot"></div> AUTOMATIC UPLINK ACTIVE (5S)</div>
       <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-700 backdrop-blur-md">
-        <p id="res-display" class="text-[10px] text-cyan-300 font-mono text-center">INITIALIZING QUANTUM LINK...</p>
+        <p id="res-display" class="text-[10px] text-cyan-300 font-mono text-center">SYSTEM IDLE</p>
       </div>
-      <button onclick="captureAndSend()" id="mainBtn" class="neon-btn w-full py-6 rounded-2xl">EXECUTE UPLINK</button>
-      <div id="status-log">>>> STANDBY</div>
+      <button onclick="toggleAuto()" id="mainBtn" class="neon-btn w-full py-6 rounded-2xl">Initiate Auto Link</button>
+      <div id="status-log">>>> WAITING FOR UPLINK COMMAND</div>
     </div>
     <canvas id="snap" class="hidden"></canvas>
   </div>
@@ -78,35 +50,54 @@
     const GAS_URL = "https://script.google.com/macros/s/AKfycbxkZbPWIFP5fozNNNBmfTGU2YQkJr0uh6TkAOSRFCzPchDGYnRl63Jw8y3_pA9BLTh8hg/exec";
     const video = document.getElementById('v');
     const log = document.getElementById('status-log');
+    const btn = document.getElementById('mainBtn');
+    let autoTimer = null;
 
-    // 註冊 PWA
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
-    }
+    if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
 
     window.onload = async () => {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-          video: { facingMode: "environment", width: 1920, height: 1080 }, audio: false 
-        });
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: 1920, height: 1080 }, audio: false });
         video.srcObject = stream;
         video.onloadedmetadata = () => {
-          document.getElementById('res-display').innerText = `RAW: ${video.videoWidth}x${video.videoHeight} ( LOCKED )`;
-          log.innerText = ">>> PWA SYSTEM ONLINE";
+          document.getElementById('res-display').innerText = `RAW: ${video.videoWidth}x${video.videoHeight} (READY)`;
+          log.innerText = ">>> SAT-LINK STABLE";
         };
       } catch (e) { log.innerText = ">>> ERR: " + e.message; }
     };
 
+    function toggleAuto() {
+      if (autoTimer) {
+        clearInterval(autoTimer);
+        autoTimer = null;
+        btn.innerText = "Initiate Auto Link";
+        btn.classList.remove('active');
+        document.getElementById('auto-status').style.display = 'none';
+        log.innerText = ">>> AUTO UPLINK TERMINATED";
+      } else {
+        captureAndSend(); // 立即執行第一次
+        autoTimer = setInterval(captureAndSend, 5000); // 每 5 秒執行一次
+        btn.innerText = "Terminate Link";
+        btn.classList.add('active');
+        document.getElementById('auto-status').style.display = 'flex';
+        log.innerText = ">>> AUTO UPLINK STARTED (INTERVAL: 5S)";
+      }
+    }
+
     async function captureAndSend() {
-      // 擷取邏輯不變
       const canvas = document.getElementById('snap');
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      canvas.getContext('2d').drawImage(video, 0, 0);
-      const base64 = canvas.toDataURL("image/jpeg", 0.75);
-      log.innerText = ">>> TRANSMITTING...";
-      await fetch(GAS_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ imageString: base64, fileName: `SEN_V86_${Date.now()}.jpg` }) });
-      log.innerText = ">>> UPLINK_SUCCESS | " + new Date().toLocaleTimeString();
+      document.getElementById('cam-box').classList.add('flash');
+      setTimeout(() => document.getElementById('cam-box').classList.remove('flash'), 200);
+
+      try {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+        const base64 = canvas.toDataURL("image/jpeg", 0.7);
+        
+        await fetch(GAS_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ imageString: base64, fileName: `AUTO_${Date.now()}.jpg` }) });
+        log.innerText = `>>> UPLINK_OK | ${new Date().toLocaleTimeString()}`;
+      } catch (e) { log.innerText = ">>> UPLINK_SYNC_ERR"; }
     }
   </script>
 </body>
