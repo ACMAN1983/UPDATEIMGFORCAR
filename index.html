@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>SENTINEL v9.0 FULL SYNC</title>
+  <title>SENTINEL v9.5 PRO</title>
   <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -14,7 +14,7 @@
     html, body { height: 100vh; height: -webkit-fill-available; margin: 0; padding: 0; background: var(--dark); overflow: hidden; touch-action: none; }
     body { font-family: 'Orbitron', sans-serif; display: flex; justify-content: center; padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) 0; }
     .terminal-container { width: 100%; max-width: 420px; background: radial-gradient(circle at center, #0f172a 0%, #020617 100%); padding: 1rem; display: flex; flex-direction: column; position: relative; }
-    #cam-box { width: 100%; aspect-ratio: 9 / 13; border-radius: 1.5rem; overflow: hidden; border: 2px solid var(--neon); box-shadow: 0 0 30px rgba(0,243,255,0.25); position: relative; background: #000; }
+    #cam-box { width: 100%; aspect-ratio: 9 / 14; border-radius: 1.5rem; overflow: hidden; border: 2px solid var(--neon); box-shadow: 0 0 30px rgba(0,243,255,0.25); position: relative; background: #000; }
     video { width: 100%; height: 100%; object-fit: cover; }
     .neon-select { background: #111827; border: 1px solid var(--neon); color: var(--neon); width: 100%; padding: 12px; border-radius: 12px; font-size: 14px; outline: none; appearance: none; text-align: center; }
     .neon-btn { background: var(--neon); color: #020617; font-weight: 900; transition: 0.3s; text-transform: uppercase; letter-spacing: 4px; box-shadow: 0 0 15px var(--neon); }
@@ -26,14 +26,14 @@
 </head>
 <body class="overscroll-none">
   <div class="terminal-container">
-    <div class="text-[8px] text-cyan-500/50 absolute top-4 right-6 tracking-widest">UPLINK_v9.0_PRO</div>
+    <div class="text-[8px] text-cyan-500/50 absolute top-4 right-6 tracking-widest">UPLINK_v9.5_PRO</div>
     <h2 class="text-center text-cyan-400 mb-2 tracking-[0.5em] text-lg font-black italic">SENTINEL</h2>
     
     <div id="cam-box">
       <video id="v" playsinline autoplay muted></video>
       <div class="absolute bottom-2 left-2 flex items-center gap-2">
         <div id="pulse" class="w-2 h-2 rounded-full bg-cyan-500"></div>
-        <span class="text-[8px] text-cyan-500 font-bold">LIVE_FEED</span>
+        <span class="text-[8px] text-cyan-500 font-bold">CORE_LINK</span>
       </div>
     </div>
 
@@ -55,14 +55,15 @@
         <option value="RDE-8679">RDE-8679</option>
       </select>
 
-      <button onclick="toggleAuto()" id="mainBtn" class="neon-btn w-full py-5 rounded-2xl">Initiate Full Sync</button>
+      <button onclick="toggleAuto()" id="mainBtn" class="neon-btn w-full py-5 rounded-2xl">Execute Quantum Sync</button>
       <div id="status-log">>>> STANDBY</div>
     </div>
     <canvas id="snap" class="hidden"></canvas>
   </div>
 
   <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbxkZbPWIFP5fozNNNBmfTGU2YQkJr0uh6TkAOSRFCzPchDGYnRl63Jw8y3_pA9BLTh8hg/exec";
+    // --- 務必確認這是最新的 /exec 網址 ---
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxkbZBPWlFP5fozNNNBmfTGU2YQkjr0uh6TKAOSRFCzPchDGYnRl63Jw8y3_pA9BLTh8hg/exec";
     const video = document.getElementById('v');
     const log = document.getElementById('status-log');
     const btn = document.getElementById('mainBtn');
@@ -85,20 +86,20 @@
           document.getElementById('disp-speed').innerHTML = `${currentGPS.speed} <span class="text-[10px]">km/h</span>`;
           document.getElementById('disp-acc').innerHTML = `${currentGPS.accuracy} <span class="text-[10px]">m</span>`;
         }, null, { enableHighAccuracy: true });
-        log.innerText = ">>> SAT-LINK STABLE";
+        log.innerText = ">>> SAT-LINK ESTABLISHED";
       } catch (e) { log.innerText = ">>> ERR: " + e.message; }
     };
 
     function toggleAuto() {
       if (timer) {
         clearInterval(timer); timer = null;
-        btn.innerText = "Initiate Full Sync";
+        btn.innerText = "Execute Quantum Sync";
         btn.classList.remove('active');
         document.getElementById('pulse').classList.remove('animate-pulse', 'bg-red-500');
         log.innerText = ">>> UPLINK TERMINATED";
       } else {
         syncAll();
-        timer = setInterval(syncAll, 5000);
+        timer = setInterval(syncAll, 5000); // 5秒循環
         btn.innerText = "Terminate Link";
         btn.classList.add('active');
         document.getElementById('pulse').classList.add('animate-pulse', 'bg-red-500');
@@ -121,9 +122,15 @@
       };
 
       try {
-        await fetch(GAS_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(payload) });
-        log.innerText = `>>> SYNC_OK | ${new Date().toLocaleTimeString()}`;
-      } catch (e) { log.innerText = ">>> SYNC_ERR"; }
+        // 使用 no-cors 突破 403 阻礙
+        await fetch(GAS_URL, { 
+          method: "POST", 
+          mode: "no-cors", 
+          headers: { "Content-Type": "text/plain" },
+          body: JSON.stringify(payload) 
+        });
+        log.innerText = `>>> SYNC_SENT | ${new Date().toLocaleTimeString()}`;
+      } catch (e) { log.innerText = ">>> UPLINK_SYNC_ERR"; }
     }
   </script>
 </body>
