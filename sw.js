@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sentinel-v880-cache';
+const CACHE_NAME = 'sentinel-v900-cache';
 self.addEventListener('install', (e) => {
   self.skipWaiting();
   e.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(['./', './index.html', './manifest.json'])));
